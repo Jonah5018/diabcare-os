@@ -1,6 +1,5 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+export function generateHospitalNumber(count: number) {
+  const number = String(count + 1).padStart(6, "0");
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return `MSC-${number}`;
 }
