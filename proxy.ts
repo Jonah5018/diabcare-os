@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next();
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          response = NextResponse.next();
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -26,18 +26,26 @@ export async function middleware(request: NextRequest) {
   );
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
   if (
-    !session &&
+    (error || !user) &&
     request.nextUrl.pathname.startsWith("/dashboard")
   ) {
-    return NextResponse.redirect(
+    const redirectResponse = NextResponse.redirect(
       new URL("/auth/login", request.url)
     );
+
+    response.cookies.getAll().forEach((cookie) =>
+      redirectResponse.cookies.set(cookie)
+    );
+
+    return redirectResponse;
   }
 
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
   return response;
 }
 

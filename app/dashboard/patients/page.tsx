@@ -1,68 +1,37 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { Plus } from "lucide-react";
+import { getClinicContext } from "@/lib/auth/context";
+import { can } from "@/lib/auth/permissions";
+import { PAGE_SIZE, cursorFilter, encodeCursor, scalar, searchTerms, type SearchParams } from "@/lib/pagination";
+import PageHeader from "@/components/dashboard/page-header";
+import PatientTable from "@/components/patients/patient-table";
+import Pagination from "@/components/shared/pagination";
 
-export default async function PatientsPage() {
-  const supabase = await createClient();
-
-  const { data: patients } = await supabase
-    .from("patients")
-    .select("*")
-    .order("created_at", { ascending: false });
+export default async function PatientsPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const search = scalar(params.q).slice(0, 80);
+  const { supabase, profile } = await getClinicContext();
+  let query = supabase.from("patients")
+    .select("id, hospital_number, first_name, other_names, last_name, gender, phone, created_at")
+    .eq("organization_id", profile.organization_id)
+    .order("created_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).limit(PAGE_SIZE + 1);
+  for (const term of searchTerms(search)) {
+    query = query.ilike("search_text", `%${term}%`);
+  }
+  const filter = cursorFilter(scalar(params.cursor));
+  if (filter) query = query.or(filter);
+  const { data, error } = await query;
+  if (error) throw new Error("Unable to load clinic patients");
+  const patients = (data ?? []).slice(0, PAGE_SIZE);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Patients</h1>
-          <p className="text-slate-500">
-            Manage registered patients
-          </p>
-        </div>
-
-        <Link
-          href="/dashboard/patients/new"
-          className="rounded-lg bg-sky-600 px-5 py-3 text-white"
-        >
-          + New Patient
-        </Link>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <PageHeader title="Patients" subtitle="Search and manage your clinic's patient records" />
+        {can(profile.role, "patients:create") ? <Link href="/dashboard/patients/new" className="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 font-medium text-white"><Plus className="h-5 w-5" />New Patient</Link> : null}
       </div>
-
-      <div className="overflow-hidden rounded-xl bg-white shadow">
-        <table className="w-full">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="p-4 text-left">Hospital No.</th>
-              <th className="text-left">Patient</th>
-              <th className="text-left">Gender</th>
-              <th className="text-left">Phone</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {patients?.length ? (
-              patients.map((patient) => (
-                <tr key={patient.id} className="border-t">
-                  <td className="p-4 font-semibold">
-                    {patient.hospital_number}
-                  </td>
-                  <td>
-                    {patient.last_name} {patient.first_name}{" "}
-                    {patient.other_names}
-                  </td>
-                  <td>{patient.gender}</td>
-                  <td>{patient.phone}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="p-8 text-center text-slate-500">
-                  No patients registered yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <PatientTable patients={patients} search={search} />
+      <Pagination path="/dashboard/patients" hasMore={(data?.length ?? 0) > PAGE_SIZE} cursor={patients.length ? encodeCursor(patients[patients.length - 1]) : undefined} query={{ q: search }} />
     </div>
   );
 }

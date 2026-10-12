@@ -39,7 +39,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+    <main id="main-content" className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
         <h1 className="text-3xl font-bold text-slate-900">DiabCare OS</h1>
         <p className="mt-2 text-sm text-slate-500">
@@ -48,9 +48,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium">Email</label>
+            <label htmlFor="login-email" className="mb-2 block text-sm font-medium">Email</label>
             <input
-              type="email"
+              id="login-email" type="email" autoComplete="username"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -59,9 +59,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">Password</label>
+            <label htmlFor="login-password" className="mb-2 block text-sm font-medium">Password</label>
             <input
-              type="password"
+              id="login-password" type="password" autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -79,9 +79,8 @@ export default function LoginPage() {
 
         {message && (
           <p
-            className={`mt-4 text-center text-sm font-medium ${
-              isError ? "text-red-600" : "text-emerald-600"
-            }`}
+            className={`mt-4 text-center text-sm font-medium ${isError ? "text-red-600" : "text-emerald-600"
+              }`}
           >
             {message}
           </p>
