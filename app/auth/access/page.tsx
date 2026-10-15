@@ -1,15 +1,34 @@
-import { signOut } from "@/actions/auth";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight, LockKeyhole } from "lucide-react";
+import { signOut } from "@/actions/auth";
+import AuthShell from "@/components/auth/auth-shell";
+import { authButtonClass, authLinkClass } from "@/components/auth/form-styles";
+
+export const metadata: Metadata = { title: "Clinic access unavailable" };
 
 export default function AccessPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-      <section className="w-full max-w-md rounded-2xl border bg-white p-8">
-        <h1 className="text-2xl font-bold text-slate-900">Clinic access unavailable</h1>
-        <Link href="/auth/invitation" className="mt-3 inline-block text-sky-700 underline">Accept a private clinic invitation</Link>
-        <p className="mt-3 text-slate-600">Your account needs an active clinic profile. Contact your clinic administrator to restore access or assign your clinic.</p>
-        <form action={signOut}><button className="mt-6 w-full rounded-xl bg-sky-600 p-3 font-semibold text-white">Sign out</button></form>
-      </section>
-    </main>
+    <AuthShell
+      eyebrow="WORKSPACE ACCESS"
+      title="Let’s connect your clinic."
+      description="Your account needs an active clinic profile before you can open the workspace."
+    >
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <LockKeyhole size={23} strokeWidth={1.5} className="mb-4 text-sky-800" aria-hidden="true" />
+          <h2 className="text-sm font-semibold text-slate-900">Clinic access unavailable</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-600">
+            Contact your clinic administrator to restore access or assign your clinic. If you’ve received a private invitation, you can accept it below.
+          </p>
+          <Link href="/auth/invitation" className={`${authLinkClass} mt-3`}>
+            Accept a private clinic invitation <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+        <form action={signOut}>
+          <button type="submit" className={authButtonClass}>Sign out</button>
+        </form>
+      </div>
+    </AuthShell>
   );
 }

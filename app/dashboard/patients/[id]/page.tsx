@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
 import PrescriptionModule from "@/components/prescriptions/prescription-module";
 import VisitSummary from "@/components/visits/visit-summary";
 import TimelineModule from "@/components/timeline/timeline-module";
 import FollowUpModule from "@/components/follow-ups/follow-up-module";
 import DocumentModule from "@/components/documents/document-module";
+import PatientFolderNav from "@/components/patients/patient-folder-nav";
 import { getPatientVisit } from "@/lib/visits/context";
 
 import { getClinicContext } from "@/lib/auth/context";
@@ -103,6 +105,16 @@ export default async function PatientProfile({ params, searchParams }: Props) {
         title={`${patient.last_name} ${patient.first_name}`}
         subtitle="Digital Patient Folder"
       />
+      <PatientFolderNav />
+      {can(profile.role, "clinical-review:view") ? (
+        <Link
+          href={`/dashboard/patients/${patient.id}/review`}
+          prefetch={false}
+          className="inline-flex min-h-11 items-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-900"
+        >
+          Open clinician review and measurement trends →
+        </Link>
+      ) : null}
 
       {visit ? (
         <Suspense fallback={<p role="status">Loading visit summary...</p>}>

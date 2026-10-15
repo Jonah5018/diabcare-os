@@ -32,9 +32,21 @@ export default function ActionForm({ action, children, className }: {
       <fieldset disabled={pending} className="min-w-0 space-y-6">
         {children}
       </fieldset>
-      {pending ? <p role="status" className="mt-3 text-sm text-slate-500">Saving record...</p> : null}
-      {state.error ? <p role="alert" className="mt-3 text-sm text-rose-700">{state.error}</p> : null}
-      {state.success ? <p role="status" className="mt-3 text-sm text-emerald-700">{state.success}</p> : null}
+      {pending ? (
+        <p role="status" className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          Saving record…
+        </p>
+      ) : null}
+      {state.error ? (
+        <p role="alert" className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-800">
+          {state.error}
+        </p>
+      ) : null}
+      {state.success ? (
+        <p role="status" className="mt-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-900">
+          {state.success}
+        </p>
+      ) : null}
     </form>
   );
 }

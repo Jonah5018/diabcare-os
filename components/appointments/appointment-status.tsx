@@ -9,16 +9,17 @@ const labels: Record<AppointmentStatus, string> = {
 };
 
 const colors: Record<AppointmentStatus, string> = {
-  scheduled: "bg-blue-50 text-blue-700",
-  waiting: "bg-amber-50 text-amber-700",
-  in_consultation: "bg-violet-50 text-violet-700",
-  completed: "bg-emerald-50 text-emerald-700",
-  cancelled: "bg-slate-100 text-slate-600",
+  scheduled: "border-sky-200 bg-sky-50 text-sky-800",
+  waiting: "border-amber-200 bg-amber-50 text-amber-800",
+  in_consultation: "border-cyan-200 bg-cyan-50 text-cyan-900",
+  completed: "border-teal-200 bg-teal-50 text-teal-800",
+  cancelled: "border-slate-200 bg-slate-50 text-slate-600",
 };
 
 export default function AppointmentStatusBadge({ status }: { status: AppointmentStatus }) {
   return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${colors[status]}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${colors[status]}`}>
+      <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
       {labels[status]}
     </span>
   );

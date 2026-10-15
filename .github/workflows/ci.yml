@@ -22,6 +22,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm audit --audit-level=critical
+      - run: git ls-files --cached --others --exclude-standard | node scripts/scan-secrets.mjs
       - run: npm run lint
       - run: npm run verify:appointments
       - run: npm run verify:platform
@@ -38,4 +40,10 @@ jobs:
       - run: npm run verify:billing
       - run: npm run verify:platform-admin
       - run: npm run verify:operations
+      - run: npm run verify:auth
+      - run: npm run verify:recovery
+      - run: npm run verify:performance
+      - run: npm run verify:security
+      - run: npm run verify:workspace
+      - run: npm run verify:clinical-review
       - run: npm run build

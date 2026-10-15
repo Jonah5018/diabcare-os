@@ -32,7 +32,14 @@ npm run verify:notifications
 npm run verify:billing
 npm run verify:platform-admin
 npm run verify:operations
+npm run verify:auth
+npm run verify:recovery
+npm run verify:performance
+npm run verify:security
+npm run verify:workspace
+npm run verify:clinical-review
 npm run build
+git ls-files --cached --others --exclude-standard | node scripts/scan-secrets.mjs
 ```
 
 For a local production server:
@@ -46,11 +53,21 @@ This smoke test checks liveness only; it does not prove clinical throughput or m
 
 ## Implemented pages
 
-Dashboard, patients and clinical folders, registration, appointments and queue, consultations, laboratory, reports, clinic team, audit history, notifications, billing configuration, account/clinic settings, and separate platform owner administration/operations.
+Dashboard, patients and clinical folders, bounded clinician review/measurement trends, registration, appointments and queue, consultations, laboratory, reports, clinic team, audit history, notifications, billing configuration, account/clinic settings, and separate platform owner administration/operations.
 
 ## Developer guides
 
 - [Platform architecture and scaling](docs/platform-foundations.md)
+- [Auth experience and password recovery setup](docs/auth-experience.md)
+- [Disaster recovery and bootstrap strategy](docs/disaster-recovery.md)
+- [Sprint 21 recovery checkpoint](docs/sprint-21.md)
+- [Performance methodology and safe harness](docs/performance.md)
+- [Sprint 22 performance checkpoint](docs/sprint-22.md)
+- [Security review and production controls](docs/security.md)
+- [Sprint 23 security checkpoint](docs/sprint-23.md)
+- [Sprint 24 pilot workflows and premium workspace](docs/sprint-24.md)
+- [Clinician review definitions, bounds and safety boundary](docs/clinical-review.md)
+- [Sprint 25 clinical intelligence foundations](docs/sprint-25.md)
 - [Sprint 7 workflow and acceptance](docs/sprint-7.md)
 - [Sprint 8 prescriptions and medication history](docs/sprint-8.md)
 - [Sprint 9 integrated visit workflow](docs/sprint-9.md)
@@ -70,3 +87,5 @@ Dashboard, patients and clinical folders, registration, appointments and queue, 
 The new migration files match the connected Supabase project's applied versions. Earlier schema creation was performed outside this repository; these files alone do not bootstrap an empty database. Capture a reviewed schema baseline before setting up a fresh environment.
 
 The local working tree is the source of truth. Preserve existing clinical work and do not commit, push, or deploy without the user's instruction.
+
+Security review: Next.js security patches and compatible dependency fixes have been applied. Nine high findings remain in the unpatched braces tooling chain; see docs/security.md. CI displays the full audit and gates critical findings. This is not a production security sign-off.

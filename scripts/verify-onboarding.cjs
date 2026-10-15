@@ -89,7 +89,7 @@ async function verify() {
   const exchanged = [];
   const { GET } = load("app/auth/callback/route.ts", {
     "next/server": { NextResponse: { redirect: url => ({ url: url.href, headers: new Map() }) } },
-    "@/lib/supabase/server": { createClient: async () => ({ auth: { exchangeCodeForSession: async code => { exchanged.push(code); return { error: null }; } } }) },
+    "@/lib/supabase/server": { createClient: async () => ({ auth: { exchangeCodeForSession: async code => { exchanged.push(code); return { data: { session: {} }, error: null }; } } }) },
   });
   const callback = await GET({ nextUrl: new URL("https://clinic.example/auth/callback?code=synthetic-code&next=https://attacker.example"), url: "https://clinic.example/auth/callback?code=synthetic-code" });
   assert.equal(exchanged[0], "synthetic-code");

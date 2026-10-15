@@ -1,69 +1,49 @@
-import Link from "next/link";
 import { Suspense } from "react";
-import FollowUpOverview from "@/components/follow-ups/follow-up-overview";
-
+import { CalendarDays, Clock3, RotateCcw, Users } from "lucide-react";
 import PageHeader from "@/components/dashboard/page-header";
 import StatCard from "@/components/dashboard/stat-card";
-import { getClinicToday } from "@/lib/clinic-date";
+import WorkflowActions from "@/components/dashboard/workflow-actions";
+import FollowUpOverview from "@/components/follow-ups/follow-up-overview";
 import { getClinicContext } from "@/lib/auth/context";
-
-import {
-  Building2,
-  Users,
-  Stethoscope,
-  CalendarDays,
-} from "lucide-react";
+import { formatAppointmentDate } from "@/lib/clinic-date";
+import { getWorkspaceOverview } from "@/lib/workspace/overview";
+import { workspaceGuidance } from "@/lib/workspace/navigation";
 
 export default async function DashboardPage() {
-  const { supabase, profile } = await getClinicContext();
-
-  const [organizationResult, patientResult, doctorResult, appointmentResult] = await Promise.all([
-    supabase.from("organizations").select("id", { count: "exact", head: true }).eq("id", profile.organization_id),
-    supabase.from("patients").select("id", { count: "exact", head: true }).eq("organization_id", profile.organization_id),
-    supabase.from("users").select("id", { count: "exact", head: true }).eq("organization_id", profile.organization_id).eq("role", "doctor").eq("is_active", true),
-    supabase.from("appointments").select("id", { count: "exact", head: true }).eq("organization_id", profile.organization_id).eq("appointment_date", getClinicToday()).neq("status", "cancelled"),
-  ]);
-  if ([organizationResult, patientResult, doctorResult, appointmentResult].some(result => result.error)) throw new Error("Unable to load clinic dashboard counts");
-  const organizations = organizationResult.count, patients = patientResult.count, doctors = doctorResult.count, todayAppointments = appointmentResult.count;
+  const { profile } = await getClinicContext();
+  const overview = await getWorkspaceOverview();
+  const guidance = workspaceGuidance[profile.role];
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Dashboard"
-        subtitle="Overview of your clinic operations"
-      />
-
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Organizations"
-          value={organizations ?? 0}
-          icon={<Building2 className="h-5 w-5" />}
+      <div className="flex flex-wrap items-start justify-between gap-5">
+        <PageHeader
+          title="Clinic overview"
+          eyebrow={guidance.label.toUpperCase()}
+          subtitle={guidance.description}
         />
-
-        <StatCard
-          title="Patients"
-          value={patients ?? 0}
-          icon={<Users className="h-5 w-5" />}
-        />
-
-        <StatCard
-          title="Doctors"
-          value={doctors ?? 0}
-          icon={<Stethoscope className="h-5 w-5" />}
-        />
-
-        <StatCard
-          title="Today's Appointments"
-          value={todayAppointments ?? 0}
-          icon={<CalendarDays className="h-5 w-5" />}
-        />
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-[10px] font-semibold tracking-widest text-slate-500">CLINIC DAY · LAGOS</p>
+          <time dateTime={overview.today} className="mt-1 block text-sm font-medium text-slate-800">
+            {formatAppointmentDate(overview.today)}
+          </time>
+        </div>
       </div>
-      <section className="space-y-4"><h2 className="text-lg font-semibold text-slate-900">Continue the clinic workflow</h2><div className="grid gap-4 md:grid-cols-3">{[
-        { title: "Patient folders", text: "Find a patient and review their care history.", href: "/dashboard/patients" },
-        { title: "Today's clinic queue", text: "Check patients in and coordinate their visits.", href: "/dashboard/appointments" },
-        { title: "Clinical records", text: "Review consultation notes across your clinic.", href: "/dashboard/consultations" },
-      ].map(item => <Link key={item.href} href={item.href} className="rounded-2xl border bg-white p-6 transition hover:border-sky-300"><h3 className="font-semibold text-sky-700">{item.title}</h3><p className="mt-2 text-sm text-slate-500">{item.text}</p></Link>)}</div></section>
-      <Suspense fallback={<p role="status">Loading follow-up overview...</p>}>
+
+      <section aria-label="Current clinic counts" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Patients" value={overview.patients} icon={<Users size={20} />} hint="Registered in this clinic" />
+        <StatCard title="Today's Appointments" value={overview.appointments} icon={<CalendarDays size={20} />} hint="Today’s bookings, excluding cancellations" />
+        <StatCard title="Waiting now" value={overview.waiting} icon={<Clock3 size={20} />} hint="Checked in and awaiting consultation today" />
+        <StatCard title="Overdue follow-ups" value={overview.overdueFollowUps} icon={<RotateCcw size={20} />} hint="Planned reviews due before today" />
+      </section>
+
+      <WorkflowActions role={profile.role} />
+
+      <Suspense fallback={
+        <div role="status" className="rounded-2xl border bg-white p-6 text-sm text-slate-500">
+          Loading follow-up overview…
+        </div>
+      }>
         <FollowUpOverview />
       </Suspense>
     </div>

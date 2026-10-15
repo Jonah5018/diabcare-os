@@ -16,9 +16,9 @@ export default function Pagination({ path, cursor, hasMore, query = {}, paramete
 
   return (
     <nav aria-label="Record pagination" className="flex flex-wrap items-center justify-between gap-3 text-sm">
-      <Link href={href()} className="rounded-lg border bg-white px-4 py-2 text-slate-700 hover:bg-slate-50">Latest records</Link>
+      <Link href={href()} className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50">Latest records</Link>
       {hasMore && cursor ? (
-        <Link href={href(cursor)} className="rounded-lg bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-700">Older records</Link>
+        <Link href={href(cursor)} className="inline-flex min-h-11 items-center rounded-xl bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800">Older records</Link>
       ) : <p className="text-slate-500">End of results</p>}
     </nav>
   );

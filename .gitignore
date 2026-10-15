@@ -37,6 +37,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Local Supabase CLI state and isolated load fixture manifests
+/.supabase/
+/supabase/.temp/
+*.load-fixture.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

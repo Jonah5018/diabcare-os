@@ -4,28 +4,31 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: ReactNode;
+  hint?: string;
 }
 
 export default function StatCard({
   title,
   value,
   icon,
+  hint,
 }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-500">
           {title}
         </p>
 
-        <div className="rounded-lg bg-sky-50 p-2 text-sky-600">
+        <div className="ml-3 rounded-xl border border-sky-100 bg-sky-50/70 p-2.5 text-sky-800" aria-hidden="true">
           {icon}
         </div>
       </div>
 
-      <h3 className="mt-6 text-3xl font-bold text-slate-900">
+      <p className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 tabular-nums">
         {value}
-      </h3>
+      </p>
+      {hint ? <p className="mt-2 text-xs leading-5 text-slate-500">{hint}</p> : null}
     </div>
   );
 }

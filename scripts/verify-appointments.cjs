@@ -20,6 +20,7 @@ function database({ user = { id: 'staff' }, profile = { organization_id: 'clinic
         select(columns, options) { call.columns = columns; call.options = options; return q; },
         eq(key, value) { call.filters.push(row => row[key] === value); return q; },
         neq(key, value) { call.filters.push(row => row[key] !== value); return q; },
+        lt(key, value) { call.filters.push(row => row[key] < value); return q; },
         single: async () => ({ data: profile, error: null }),
         then(resolve, reject) {
           return Promise.resolve({
@@ -40,6 +41,7 @@ function dashboard(db) {
     '@/components/dashboard/page-header': { default: 'PageHeader' },
     '@/components/dashboard/stat-card': { default: 'StatCard' },
     '@/components/follow-ups/follow-up-overview': () => null,
+    '@/components/dashboard/workflow-actions': () => null,
   }).default();
 }
 
@@ -113,7 +115,7 @@ function cardValue(tree, title) {
             const row = table === 'patients' ? { id: valid.patient_id, organization_id: 'clinic-a' } : profile;
             return { data: filters.every(fn => fn(row)) ? row : null, error: null };
           },
-          insert: async row => { visits.push({ id: 'test-visit', ...row }); return { error: null }; },
+          insert: async row => { visits.push({ id: '44444444-4444-4444-8444-444444444444', ...row }); return { error: null }; },
           maybeSingle: async () => {
             const row = visits.find(row => filters.every(fn => fn(row)));
             if (row) Object.assign(row, patch);
@@ -148,23 +150,24 @@ function cardValue(tree, title) {
   data.set('patient_id', '33333333-3333-4333-8333-333333333333');
   assert.match((await actions.createAppointment({}, data)).error, /not found in your clinic/);
   assert.equal(actionDb.visits.length, 1);
-  await actions.checkInAppointment('test-visit');
+  const syntheticVisitId = '44444444-4444-4444-8444-444444444444';
+  await actions.checkInAppointment(syntheticVisitId);
   assert.equal(actionDb.rpcCalls[0].name, 'check_in_appointment');
-  assert.equal(actionDb.rpcCalls[0].args.p_appointment_id, 'test-visit');
+  assert.equal(actionDb.rpcCalls[0].args.p_appointment_id, syntheticVisitId);
   actionDb.visits[0].status = 'waiting';
-  await actions.startConsultation('test-visit');
+  await actions.startConsultation(syntheticVisitId);
   assert.equal(actionDb.visits[0].status, 'in_consultation');
-  await actions.completeAppointment('test-visit');
+  await actions.completeAppointment(syntheticVisitId);
   assert.equal(actionDb.visits[0].status, 'completed');
-  await assert.rejects(actions.cancelAppointment('test-visit'), /already have changed/);
+  await assert.rejects(actions.cancelAppointment(syntheticVisitId), /already have changed/);
   for (const status of ['scheduled', 'waiting', 'in_consultation']) {
     actionDb.visits[0].status = status;
-    await actions.cancelAppointment('test-visit');
+    await actions.cancelAppointment(syntheticVisitId);
     assert.equal(actionDb.visits[0].status, 'cancelled');
   }
   actionDb.visits[0].organization_id = 'clinic-b';
   actionDb.visits[0].status = 'waiting';
-  await assert.rejects(actions.startConsultation('test-visit'), /already have changed/);
+  await assert.rejects(actions.startConsultation(syntheticVisitId), /already have changed/);
   console.log('PASS: real date/time/leap-year validation; server booking ignores browser clinic ID, schedules without queue, rejects invalid/past/cross-clinic submissions; RPC delegation; lifecycle actions, terminal guards, clinic-scoped updates; cache invalidation.');
   console.log('PASS: clinic midnight/year rollover; dashboard count across statuses; cancellation, future visits and other clinics excluded; empty count; auth/profile guards; query failures.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

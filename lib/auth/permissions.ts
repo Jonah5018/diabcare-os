@@ -32,7 +32,8 @@ export type Permission =
   | "notifications:manage"
   | "billing:view"
   | "platform:view"
-  | "platform:manage";
+  | "platform:manage"
+  | "clinical-review:view";
 
 const grants: Record<Permission, readonly UserRole[]> = {
   "patients:create": ["platform_owner", "organization_admin", "receptionist", "doctor", "nurse"],
@@ -59,6 +60,7 @@ const grants: Record<Permission, readonly UserRole[]> = {
   "billing:view": ["platform_owner", "organization_admin"],
   "platform:view": ["platform_owner"],
   "platform:manage": ["platform_owner"],
+  "clinical-review:view": ["platform_owner", "organization_admin", "doctor"],
 };
 
 export function can(role: UserRole, permission: Permission) {
@@ -90,4 +92,5 @@ export const permissionLabels: Record<Permission, string> = {
   "billing:view": "View clinic billing configuration",
   "platform:view": "View global platform metadata",
   "platform:manage": "Manage clinic operational status and billing bindings",
+  "clinical-review:view": "View bounded clinician review and measurement trends",
 };

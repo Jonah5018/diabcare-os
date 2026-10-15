@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { getClinicContext } from "@/lib/auth/context";
 import { can } from "@/lib/auth/permissions";
@@ -88,14 +89,16 @@ export async function createAppointment(
 export async function checkInAppointment(appointmentId: string) {
   const { supabase, profile } = await getCurrentUserContext();
   if (!can(profile.role, "appointments:update")) throw new Error("Your role cannot update appointments");
+  if (!z.uuid().safeParse(appointmentId).success) throw new Error("Invalid appointment identifier");
 
   // The database validates the clinic date and assigns the queue number atomically.
-  const { error } = await supabase.rpc("check_in_appointment", {
-    p_appointment_id: appointmentId,
-  });
-
-  if (error) {
-    throw new Error(error.message);
+  try {
+    const { error } = await supabase.rpc("check_in_appointment", {
+      p_appointment_id: appointmentId,
+    });
+    if (error) throw error;
+  } catch {
+    throw new Error("Check-in could not be confirmed. Refresh the clinic queue before retrying.");
   }
 
   revalidateAppointments();
@@ -109,6 +112,7 @@ async function transitionAppointment(
   const { supabase, profile } = await getCurrentUserContext();
 
   if (!can(profile.role, "appointments:update")) throw new Error("Your role cannot update appointments");
+  if (!z.uuid().safeParse(appointmentId).success) throw new Error("Invalid appointment identifier");
 
   const baseQuery = supabase
     .from("appointments")
@@ -116,15 +120,18 @@ async function transitionAppointment(
     .eq("id", appointmentId)
     .eq("organization_id", profile.organization_id);
 
-  const result = Array.isArray(fromStatus)
-    ? await baseQuery.in("status", fromStatus).select("id").maybeSingle()
-    : await baseQuery.eq("status", fromStatus).select("id").maybeSingle();
-
-  if (result.error) {
-    throw new Error(result.error.message);
+  let updated = false;
+  try {
+    const result = Array.isArray(fromStatus)
+      ? await baseQuery.in("status", fromStatus).select("id").maybeSingle()
+      : await baseQuery.eq("status", fromStatus).select("id").maybeSingle();
+    if (result.error) throw result.error;
+    updated = Boolean(result.data);
+  } catch {
+    throw new Error("Appointment update could not be confirmed. Refresh its history before retrying.");
   }
 
-  if (!result.data) {
+  if (!updated) {
     throw new Error(
       "Appointment could not be updated. It may already have changed status."
     );

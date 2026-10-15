@@ -44,4 +44,4 @@ Authentication incidents: group redacted auth rejection events by time/rate and 
 
 Migration: `20261014133226_operational_diagnostics_and_delivery_security_guards.sql`. It also hardens delivery-time availability, managed billing-period expiry, document command access, metadata restrictions and internal notice audit. Later billing reconciliation is a separate corrective migration.
 
-Application/database/build checks pass. Live schedulers, real provider webhooks, isolated browser journeys, concurrent-session load, external alert routing and restoration remain unverified. Those limits are not represented as green production-readiness or million-user capacity claims. Sprint 21 backup/restore work has not started.
+Application/database/build checks pass. Live schedulers, real provider webhooks, isolated browser journeys, concurrent-session load, external alert routing and restoration remain unverified. Those limits are not represented as green production-readiness or million-user capacity claims. Subsequent recovery, performance, security, pilot UX and clinician-review work is documented in Sprints 21–25; their staging and recovery limitations remain explicit.
