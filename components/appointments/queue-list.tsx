@@ -92,10 +92,10 @@ export default function QueueList({ appointments, canUpdate = true }: QueueListP
 
               {appointment.status === "waiting" || appointment.status === "in_consultation" ? (
                 <div className="mt-3 flex flex-wrap gap-3 text-sm font-medium text-sky-700">
-                  <Link href={`/dashboard/patients/${appointment.patientId}#vitals`} className="hover:underline">
+                  <Link href={`/dashboard/patients/${appointment.patientId}?appointment=${appointment.id}#vitals`} className="hover:underline">
                     Record vitals
                   </Link>
-                  <Link href={`/dashboard/patients/${appointment.patientId}#consultations`} className="hover:underline">
+                  <Link href={`/dashboard/patients/${appointment.patientId}?appointment=${appointment.id}#consultations`} className="hover:underline">
                     Clinical notes
                   </Link>
                 </div>

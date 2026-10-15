@@ -1,8 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { emitOperationalEvent, newRequestId } from "@/lib/observability/events";
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const requestId = newRequestId();
+  const nextResponse = () => {
+    const forwarded = new Headers(request.headers);
+    forwarded.set("x-request-id", requestId);
+    return NextResponse.next({ request: { headers: forwarded } });
+  };
+  let response = nextResponse();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +23,7 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          response = NextResponse.next({ request });
+          response = nextResponse();
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -32,7 +39,7 @@ export async function proxy(request: NextRequest) {
 
   if (
     (error || !user) &&
-    request.nextUrl.pathname.startsWith("/dashboard")
+    (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/platform"))
   ) {
     const redirectResponse = NextResponse.redirect(
       new URL("/auth/login", request.url)
@@ -41,14 +48,17 @@ export async function proxy(request: NextRequest) {
     response.cookies.getAll().forEach((cookie) =>
       redirectResponse.cookies.set(cookie)
     );
-
+    redirectResponse.headers.set("X-Request-ID", requestId);
+    redirectResponse.headers.set("Cache-Control", "private, no-store");
+    emitOperationalEvent({ event: "auth_check", request_id: requestId, outcome: "rejected" });
     return redirectResponse;
   }
 
   response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.set("X-Request-ID", requestId);
   return response;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/platform/:path*"],
 };

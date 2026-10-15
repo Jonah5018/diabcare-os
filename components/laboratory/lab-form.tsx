@@ -7,8 +7,10 @@ import { createLabResult } from "@/actions/laboratory";
 
 export default function LabForm({
   patientId,
+  appointmentId,
 }: {
   patientId: string;
+  appointmentId?: string;
 }) {
   return (
     <ActionForm
@@ -16,6 +18,7 @@ export default function LabForm({
       className="space-y-6 rounded-2xl border bg-white p-6"
     >
       <input type="hidden" name="patient_id" value={patientId} />
+      <input type="hidden" name="appointment_id" value={appointmentId ?? ""} />
 
       <div className="flex items-center gap-3">
         <div className="rounded-xl bg-violet-100 p-2 text-violet-600">

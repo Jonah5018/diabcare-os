@@ -15,8 +15,10 @@ export type ClinicProfile = {
   is_active: boolean;
 };
 
+type StaffProfile = Omit<ClinicProfile, "organization_id"> & { organization_id: string | null };
+
 // React cache deduplicates work within a server render; it is not a shared tenant cache.
-export const getClinicContext = cache(async () => {
+export const getStaffContext = cache(async () => {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -28,11 +30,19 @@ export const getClinicContext = cache(async () => {
     .eq("id", user.id)
     .single();
 
-  if (profileError || !profile?.organization_id || !profile.is_active || !Object.hasOwn(roleLabels, profile.role)) {
+  if (profileError || !profile || !profile.is_active || !Object.hasOwn(roleLabels, profile.role)) {
     redirect("/auth/access");
   }
 
-  return { supabase, user, profile: profile as ClinicProfile };
+  return { supabase, user, profile: profile as StaffProfile };
+});
+
+export const getClinicContext = cache(async () => {
+  const context = await getStaffContext();
+  if (!context.profile.organization_id) redirect("/auth/access");
+  const { data, error } = await context.supabase.rpc("get_clinic_workspace_status");
+  if (error || data !== "active") redirect("/auth/access");
+  return { ...context, profile: context.profile as ClinicProfile };
 });
 
 export async function requirePermission(permission: Permission) {

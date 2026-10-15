@@ -68,11 +68,11 @@ The existing Geist Latin fonts are stored in app/fonts and loaded through next/f
 - Actual pages at 375px and populated queue/upcoming components rendered with synthetic data at 375px and 1280px had no horizontal overflow. Fresh application console checks were clean.
 - The formatted vitals components retained the same compiled runtime code.
 
-## Sprint status and remaining acceptance work
+## Sprint status and deferred acceptance work
 
-The dashboard-count task and these Sprint 7 improvements are implemented and verified at the component, action, and database layers. Keep Sprint 7 open until a complete browser booking → check-in → consultation → completion/cancellation walkthrough is recorded using designated test data. No new permanent live appointments were created during this development pass.
+Sprint 7 is closed on 14 October 2026 under the user's explicit acceptance of the strongest safe action, regression, and real database verification. The complete isolated multi-role browser walkthrough remains deferred until supported clinic provisioning and staff invitations exist. This is recorded acceptance debt, not a completed browser test. No account was reassigned, tenant isolation was not weakened, and no permanent synthetic records were added to the current clinic.
 
-Before moving to Sprint 8:
+Deferred walkthrough for the isolated test clinic:
 
 1. Book a visit for the clinic's current day. Confirm it appears as Scheduled, without a queue number, and increases the dashboard count.
 2. Book a future visit. Confirm it appears only under Upcoming Appointments and does not increase today's count.
@@ -88,4 +88,4 @@ Do not delete existing test records, weaken RLS, install or downgrade packages u
 
 The subsequent clinic-operations pass completed the clinical validation and role review, replaced development account details with the authenticated clinic profile, and implemented the standalone operations pages. It also applied and saved reproducible migrations for clinical isolation, search, auditing, and relationship indexes. See [Platform foundations](platform-foundations.md) for the current architecture, verification, and capacity limitations.
 
-Earlier database history still needs a reviewed schema baseline before an empty environment can be bootstrapped. The browser appointment acceptance walkthrough above remains outstanding.
+Earlier database history still needs a reviewed schema baseline before an empty environment can be bootstrapped. The browser appointment acceptance walkthrough above remains deferred and does not block Sprint 8 under the user's revised instruction.

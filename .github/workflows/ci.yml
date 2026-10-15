@@ -25,4 +25,17 @@ jobs:
       - run: npm run lint
       - run: npm run verify:appointments
       - run: npm run verify:platform
+      - run: npm run verify:prescriptions
+      - run: npm run verify:visits
+      - run: npm run verify:timeline
+      - run: npm run verify:follow-ups
+      - run: npm run verify:onboarding
+      - run: npm run verify:staff-roles
+      - run: npm run verify:reports
+      - run: npm run verify:audit
+      - run: npm run verify:documents
+      - run: npm run verify:notifications
+      - run: npm run verify:billing
+      - run: npm run verify:platform-admin
+      - run: npm run verify:operations
       - run: npm run build

@@ -3,6 +3,7 @@ import PageHeader from "@/components/dashboard/page-header";
 import EmptyState from "@/components/shared/empty-state";
 import Pagination from "@/components/shared/pagination";
 import { getClinicContext } from "@/lib/auth/context";
+import { can } from "@/lib/auth/permissions";
 import { cursorFilter, encodeCursor, PAGE_SIZE, scalar, type SearchParams } from "@/lib/pagination";
 import { patientName, relation, type PatientIdentity } from "@/lib/patient-display";
 
@@ -37,6 +38,20 @@ export default async function ConsultationsPage({ searchParams }: { searchParams
                 </div>
                 <dl className="mt-4 space-y-2 break-words text-sm"><div><dt className="font-medium">Chief complaint</dt><dd className="line-clamp-3 text-slate-600">{record.chief_complaint ?? "Not recorded"}</dd></div><div><dt className="font-medium">Diagnosis</dt><dd className="line-clamp-3 text-slate-600">{record.diagnosis ?? "Not recorded"}</dd></div></dl>
                 <p className="mt-4 text-xs text-slate-500">Recorded by {doctor?.full_name ?? "Clinic staff"}</p>
+                {can(profile.role, "follow-ups:create") ? (
+                  <Link href={`/dashboard/consultations/${record.id}/follow-ups/new`}
+                    className="mr-3 mt-4 inline-block rounded-lg border px-4 py-2 text-sm font-medium text-sky-700">
+                    Plan follow-up
+                  </Link>
+                ) : null}
+                {can(profile.role, "prescriptions:create") ? (
+                  <Link
+                    href={`/dashboard/consultations/${record.id}/prescriptions/new`}
+                    className="mt-4 inline-block rounded-lg border px-4 py-2 text-sm font-medium text-sky-700"
+                  >
+                    Create prescription
+                  </Link>
+                ) : null}
               </article>
             );
           })}

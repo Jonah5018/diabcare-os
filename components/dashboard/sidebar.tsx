@@ -11,12 +11,17 @@ const menu = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Patients", href: "/dashboard/patients", icon: Users },
   { name: "Appointments", href: "/dashboard/appointments", icon: CalendarDays },
+  { name: "Follow-ups", href: "/dashboard/follow-ups", icon: CalendarDays },
   { name: "Consultations", href: "/dashboard/consultations", icon: Stethoscope },
   { name: "Laboratory", href: "/dashboard/laboratory", icon: FlaskConical },
   { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, permission: "reports:view" as Permission },
   { name: "Team", href: "/dashboard/team", icon: UserRoundCog, permission: "team:view" as Permission },
+  { name: "Clinic Onboarding", href: "/dashboard/clinics", icon: UserRoundCog, permission: "clinics:create" as Permission },
   { name: "Audit History", href: "/dashboard/audit", icon: ShieldCheck, permission: "team:view" as Permission },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Notifications", href: "/dashboard/notifications", icon: ShieldCheck, permission: "notifications:view" as Permission },
+  { name: "Billing", href: "/dashboard/billing", icon: FileBarChart, permission: "billing:view" as Permission },
+  { name: "Platform Administration", href: "/platform", icon: ShieldCheck, permission: "platform:view" as Permission },
 ];
 
 export default function Sidebar({ account, onNavigate }: { account: WorkspaceAccount; onNavigate?: () => void }) {

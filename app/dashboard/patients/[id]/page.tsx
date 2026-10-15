@@ -1,4 +1,11 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import PrescriptionModule from "@/components/prescriptions/prescription-module";
+import VisitSummary from "@/components/visits/visit-summary";
+import TimelineModule from "@/components/timeline/timeline-module";
+import FollowUpModule from "@/components/follow-ups/follow-up-module";
+import DocumentModule from "@/components/documents/document-module";
+import { getPatientVisit } from "@/lib/visits/context";
 
 import { getClinicContext } from "@/lib/auth/context";
 import { can } from "@/lib/auth/permissions";
@@ -35,6 +42,10 @@ export default async function PatientProfile({ params, searchParams }: Props) {
 
   if (!patient) notFound();
 
+  const visit = await getPatientVisit(patient.id, scalar(filters.appointment));
+  const clinicalRecordingAllowed = !visit
+    || ["waiting", "in_consultation", "completed"].includes(visit.status);
+
   const base = (table: "appointments" | "consultations" | "vitals" | "laboratory_results") => supabase.from(table).select("*")
     .eq("patient_id", id).eq("organization_id", profile.organization_id);
   const history = (table: "appointments" | "consultations" | "laboratory_results", parameter: string, column: "created_at" | "visit_date" | "appointment_date") => {
@@ -55,7 +66,19 @@ export default async function PatientProfile({ params, searchParams }: Props) {
   const consultations = (consultationResult.data ?? []).slice(0, PAGE_SIZE);
   const labResults = (labResult.data ?? []).slice(0, PAGE_SIZE);
   const latestVitals = vitalResult.data;
-  const pageQuery = Object.fromEntries(["appointmentCursor", "consultationCursor", "labCursor"].map(key => [key, scalar(filters[key])]));
+  const cursorParameters = [
+    "appointment",
+    "appointmentCursor",
+    "consultationCursor",
+    "labCursor",
+    "prescriptionCursor",
+    "timelineCursor",
+    "followUpCursor",
+    "documentCursor",
+  ];
+  const pageQuery = Object.fromEntries(
+    cursorParameters.map(key => [key, scalar(filters[key])])
+  );
   const paging = (rows: { id: string; created_at: string | null; visit_date?: string | null; appointment_date?: string }[], length: number, parameter: string, column: "created_at" | "visit_date" | "appointment_date") => {
     const last = rows[rows.length - 1];
     return <Pagination path={`/dashboard/patients/${id}`} query={pageQuery} parameter={parameter} hasMore={length > PAGE_SIZE} cursor={last ? encodeCursor({ id: last.id, created_at: last[column] ?? null }) : undefined} />;
@@ -80,6 +103,12 @@ export default async function PatientProfile({ params, searchParams }: Props) {
         title={`${patient.last_name} ${patient.first_name}`}
         subtitle="Digital Patient Folder"
       />
+
+      {visit ? (
+        <Suspense fallback={<p role="status">Loading visit summary...</p>}>
+          <VisitSummary patientId={patient.id} visit={visit} />
+        </Suspense>
+      ) : null}
 
       {/* Hero Card */}
       <DiabetesSummary
@@ -153,15 +182,27 @@ export default async function PatientProfile({ params, searchParams }: Props) {
       </div>
 
       {/* Vitals Module */}
+      <Suspense fallback={<p role="status">Loading patient timeline...</p>}>
+        <TimelineModule
+          patientId={patient.id}
+          cursor={scalar(filters.timelineCursor)}
+          query={pageQuery}
+        />
+      </Suspense>
+
       <div id="vitals" className="scroll-mt-20 space-y-6">
         <VitalsCard vitals={latestVitals} />
 
-        {can(profile.role, "vitals:create") ? <VitalsForm patientId={patient.id} /> : null}
+        {clinicalRecordingAllowed && can(profile.role, "vitals:create") ? (
+          <VitalsForm patientId={patient.id} appointmentId={visit?.id} />
+        ) : null}
       </div>
 
       {/* Laboratory Module */}
       <div id="laboratory" className="scroll-mt-20 space-y-6">
-        {can(profile.role, "laboratory:create") ? <LabForm patientId={patient.id} /> : null}
+        {clinicalRecordingAllowed && can(profile.role, "laboratory:create") ? (
+          <LabForm patientId={patient.id} appointmentId={visit?.id} />
+        ) : null}
 
         <div className="rounded-2xl border bg-slate-50 p-6">
           <h3 className="mb-4 text-lg font-semibold">
@@ -174,17 +215,39 @@ export default async function PatientProfile({ params, searchParams }: Props) {
       </div>
       {/* Consultation Module */}
       <div id="consultations" className="scroll-mt-20 space-y-6">
-        {can(profile.role, "consultations:create") ? <ConsultationForm patientId={patient.id} /> : null}
+        {clinicalRecordingAllowed && can(profile.role, "consultations:create") ? (
+          <ConsultationForm patientId={patient.id} appointmentId={visit?.id} />
+        ) : null}
 
         <div className="rounded-2xl border bg-slate-50 p-6">
           <h3 className="mb-4 text-lg font-semibold">
-            Clinical Timeline
+            Consultation History
           </h3>
 
-          <ConsultationList consultations={consultations} />
+          <ConsultationList
+            consultations={consultations}
+            canPrescribe={can(profile.role, "prescriptions:create")}
+            canPlanFollowUp={can(profile.role, "follow-ups:create")}
+          />
           {paging(consultations, consultationResult.data?.length ?? 0, "consultationCursor", "visit_date")}
         </div>
       </div>
+
+      <Suspense fallback={<p role="status">Loading prescription history...</p>}>
+        <PrescriptionModule
+          patientId={patient.id}
+          cursor={scalar(filters.prescriptionCursor)}
+          query={pageQuery}
+        />
+      </Suspense>
+
+      <Suspense fallback={<p role="status">Loading follow-up plans...</p>}>
+        <FollowUpModule patientId={patient.id} cursor={scalar(filters.followUpCursor)} query={pageQuery} />
+      </Suspense>
+
+      <Suspense fallback={<p role="status">Loading patient documents...</p>}>
+        <DocumentModule patientId={patient.id} cursor={scalar(filters.documentCursor)} query={pageQuery} />
+      </Suspense>
 
       {appointmentsError ? (
         <section className="rounded-2xl border bg-white p-6">
@@ -194,7 +257,10 @@ export default async function PatientProfile({ params, searchParams }: Props) {
           </p>
         </section>
       ) : (
-        <div className="space-y-4"><AppointmentHistory appointments={appointments} />{paging(appointments, appointmentResult.data?.length ?? 0, "appointmentCursor", "appointment_date")}</div>
+        <div id="appointments" className="scroll-mt-20 space-y-4">
+          <AppointmentHistory appointments={appointments} patientId={patient.id} />
+          {paging(appointments, appointmentResult.data?.length ?? 0, "appointmentCursor", "appointment_date")}
+        </div>
       )}
     </div>
   );

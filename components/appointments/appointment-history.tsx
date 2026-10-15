@@ -1,4 +1,5 @@
 import AppointmentStatusBadge from "@/components/appointments/appointment-status";
+import Link from "next/link";
 import { formatAppointmentDate, formatAppointmentTime } from "@/lib/clinic-date";
 import type { AppointmentStatus } from "@/types/appointment";
 
@@ -13,8 +14,10 @@ export type PatientAppointment = {
 
 export default function AppointmentHistory({
   appointments,
+  patientId,
 }: {
   appointments: PatientAppointment[];
+  patientId?: string;
 }) {
   return (
     <section className="rounded-2xl border bg-white p-6">
@@ -40,6 +43,14 @@ export default function AppointmentHistory({
 
               {appointment.reason ? (
                 <p className="break-words text-sm text-slate-600">{appointment.reason}</p>
+              ) : null}
+              {patientId ? (
+                <Link
+                  href={`/dashboard/patients/${patientId}?appointment=${appointment.id}`}
+                  className="inline-block text-sm text-sky-700 underline"
+                >
+                  Review visit workflow
+                </Link>
               ) : null}
             </article>
           ))}

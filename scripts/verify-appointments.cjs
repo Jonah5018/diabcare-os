@@ -12,6 +12,7 @@ function database({ user = { id: 'staff' }, profile = { organization_id: 'clinic
   return {
     calls,
     auth: { getUser: async () => ({ data: { user }, error: null }) },
+    rpc: async () => ({ data: 'active', error: null }),
     from(table) {
       const call = { table, filters: [] };
       calls.push(call);
@@ -38,6 +39,7 @@ function dashboard(db) {
     'next/navigation': { redirect: location => { throw new Error('redirect:' + location); } },
     '@/components/dashboard/page-header': { default: 'PageHeader' },
     '@/components/dashboard/stat-card': { default: 'StatCard' },
+    '@/components/follow-ups/follow-up-overview': () => null,
   }).default();
 }
 
@@ -94,7 +96,11 @@ function cardValue(tree, title) {
     return {
       visits, rpcCalls, user, profile,
       auth: { getUser: async () => ({ data: { user }, error: null }) },
-      rpc: async (name, args) => { rpcCalls.push({ name, args }); return { data: [], error: null }; },
+      rpc: async (name, args) => {
+        if (name === 'get_clinic_workspace_status') return { data: 'active', error: null };
+        rpcCalls.push({ name, args });
+        return { data: [], error: null };
+      },
       from(table) {
         const filters = [];
         let patch;

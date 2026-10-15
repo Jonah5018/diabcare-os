@@ -2,7 +2,7 @@
 
 ## Architecture and responsibility
 
-The existing application remains a modular Next.js monolith backed by Supabase Auth and PostgreSQL. Clinical features stay in their existing actions and components. No additional packages, microservices, production deployment, or external notification integrations were introduced.
+The application remains a modular Next.js monolith backed by Supabase Auth and PostgreSQL. Clinical features stay in their existing actions and components. Sprints 8–20 extend this foundation with prescriptions, visits, timeline, follow-ups, onboarding, protected roles, analytics, audit exports, private documents, durable notifications, billing entitlements, global owner metadata and observability. No additional packages, microservices or production deployment were introduced. External messaging, billing activation and scheduler setup remain disabled/unconfigured until controlled acceptance.
 
 | Responsibility | Location |
 | --- | --- |
@@ -40,7 +40,7 @@ RLS independently enforces active-clinic access and clinical write roles. Compos
 | Operational reports | Platform owner, clinic administrator, doctor |
 | Staff directory and audit history | Platform owner, clinic administrator |
 
-Platform-owner access remains scoped to the assigned clinic in this application. A global platform-admin interface should be designed as a separate, explicitly authorised surface.
+Normal platform-owner clinical access remains scoped to the assigned active clinic. The separate /platform surface deliberately exposes owner-only organization metadata and controls, without global clinical SELECT or impersonation. Staff identity and clinic context are separate so owners can restore a suspended clinic through the global surface; normal clinic context still requires an assigned active organization. See docs/sprint-19.md.
 
 ## Query growth controls
 
@@ -61,13 +61,13 @@ Database triggers record new patient/clinical records and appointment updates. C
 
 Events store actor, entity type, record identifier, operation, time, and appointment status transitions. They exclude clinical notes and measurement values. Events are recorded prospectively; old records were not backfilled or relabelled.
 
-This is an operational audit foundation. Production retention, tamper-resistant archival, administrator export, legal retention policies, and backup-restoration procedures still need explicit design and verification.
+Audit now includes bounded administrative CSV exports, disabled-deletion retention drafts, document access requests, internal notices and a separate owner-only platform ledger. These record requests/metadata rather than observed delivery or clinical content. Tamper-resistant archival, legal retention enforcement and backup-restoration validation remain future work. See docs/sprint-15.md through docs/sprint-20.md.
 
 ## DevOps additions
 
-The GitHub Actions workflow uses pinned official action revisions, read-only repository permission, Node.js 24, npm ci, lint, both regression checks, and the production build. It is saved locally and has not run on GitHub because changes were not pushed. CI uses clearly labelled public build placeholders rather than production credentials.
+The GitHub Actions workflow uses pinned official action revisions, read-only repository permission, Node.js 24, npm ci, lint, all fifteen registered application suites and the production build. It is saved locally and has not run on GitHub because changes were not pushed. CI uses clearly labelled public build placeholders rather than production credentials. Fourteen database suites run with transaction/rollback fixtures through a controlled database connection; they are not represented as having run remotely in GitHub Actions.
 
-The app includes a local-only liveness smoke script and a no-store /api/health response. That route deliberately does not claim database readiness. Monitor authenticated synthetic clinic journeys separately in staging.
+The app includes a local-only liveness smoke script and a no-store /api/health response. That route deliberately does not claim database readiness. Protected readiness/worker routes, fixed aggregate owner diagnostics and redacted logging are documented in docs/sprint-20.md. The optional server-only operations credential is isolated from ordinary clinical/user data paths. Monitor authenticated synthetic clinic journeys separately in staging.
 
 Geist fonts remain local. The installed Next.js compiler API and worker-thread settings remain enabled so the production build can finish in the restricted Windows environment without disabling type checks.
 
@@ -98,7 +98,7 @@ The full production build and TypeScript checks passed during this pass. Applica
 
 Database advisors no longer report missing foreign-key indexes. The remaining index notices are informational unused-index statistics on this small dataset. Existing patient and appointment records were preserved, and no persistent synthetic fixtures were retained.
 
-Browser checks verify the implemented pages and responsive layout. The prior Sprint 7 requirement to record a complete browser booking-to-completion walkthrough using designated test data remains an acceptance task. Clinical writes were tested through the real database policies and through action regressions, rather than adding permanent software-test clinical records to the live clinic.
+Browser checks verify the implemented foundation pages and responsive layout. On 14 October 2026 the user accepted safe regression/database verification to close Sprint 7. Its isolated multi-role browser walkthrough remains deferred until controlled provisioning and invitations exist, rather than blocking the roadmap. Clinical writes were tested through real database policies and action regressions, without permanent software-test clinical records in the live clinic.
 
 The authenticated mobile browser also verified no-match patient/doctor searches, the indexed patient directory's empty state, and rejection of report windows exceeding 31 days. A whitespace-only consultation was rejected by server validation, displayed feedback, and retained the other entered values without creating a record. Clinical forms reset only after a successful save. Duplicate clinical-note input IDs were corrected.
 

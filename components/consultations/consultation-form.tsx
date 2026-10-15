@@ -6,8 +6,10 @@ import { createConsultation } from "@/actions/consultation";
 
 export default function ConsultationForm({
   patientId,
+  appointmentId,
 }: {
   patientId: string;
+  appointmentId?: string;
 }) {
   return (
     <ActionForm
@@ -15,6 +17,7 @@ export default function ConsultationForm({
       className="space-y-4 rounded-2xl border bg-white p-6"
     >
       <input type="hidden" name="patient_id" value={patientId} />
+      <input type="hidden" name="appointment_id" value={appointmentId ?? ""} />
 
       <h3 className="text-lg font-semibold">
         New Consultation

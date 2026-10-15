@@ -37,7 +37,7 @@ assert.equal(labSchema.safeParse({patient_id:patientId,hba1c:'101',creatinine:'1
 (async()=>{
   let profile={id:userId,organization_id:'clinic-a',role:'doctor',is_active:true,full_name:'Synthetic Doctor',email:'test@example.invalid'};
   const writes=[];
-  const db={auth:{getUser:async()=>({data:{user:{id:userId}},error:null})},from(table){
+  const db={auth:{getUser:async()=>({data:{user:{id:userId}},error:null})},rpc:async()=>({data:'active',error:null}),from(table){
     const filters=[];
     const q={select(){return q},eq(key,value){filters.push(row=>row[key]===value);return q},single:async()=>({data:profile,error:null}),maybeSingle:async()=>{const row={id:patientId,organization_id:'clinic-a'};return{data:filters.every(fn=>fn(row))?row:null,error:null}},insert:async(row)=>{writes.push({table,row});return{error:null}}};return q;
   }};

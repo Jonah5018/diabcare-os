@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface Consultation {
   id: string;
   visit_date: string;
@@ -9,8 +11,12 @@ interface Consultation {
 
 export default function ConsultationList({
   consultations,
+  canPrescribe = false,
+  canPlanFollowUp = false,
 }: {
   consultations: Consultation[];
+  canPrescribe?: boolean;
+  canPlanFollowUp?: boolean;
 }) {
   if (consultations.length === 0) {
     return (
@@ -57,6 +63,20 @@ export default function ConsultationList({
               <strong>Notes:</strong> {item.notes || "—"}
             </p>
           </div>
+          {canPlanFollowUp ? (
+            <Link href={`/dashboard/consultations/${item.id}/follow-ups/new`}
+              className="mr-3 mt-4 inline-block rounded-lg border px-4 py-2 text-sm font-medium text-sky-700">
+              Plan follow-up
+            </Link>
+          ) : null}
+          {canPrescribe ? (
+            <Link
+              href={`/dashboard/consultations/${item.id}/prescriptions/new`}
+              className="mt-4 inline-block rounded-lg border px-4 py-2 text-sm font-medium text-sky-700"
+            >
+              Create prescription
+            </Link>
+          ) : null}
         </div>
       ))}
     </div>

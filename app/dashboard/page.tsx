@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import FollowUpOverview from "@/components/follow-ups/follow-up-overview";
 
 import PageHeader from "@/components/dashboard/page-header";
 import StatCard from "@/components/dashboard/stat-card";
@@ -61,6 +63,9 @@ export default async function DashboardPage() {
         { title: "Today's clinic queue", text: "Check patients in and coordinate their visits.", href: "/dashboard/appointments" },
         { title: "Clinical records", text: "Review consultation notes across your clinic.", href: "/dashboard/consultations" },
       ].map(item => <Link key={item.href} href={item.href} className="rounded-2xl border bg-white p-6 transition hover:border-sky-300"><h3 className="font-semibold text-sky-700">{item.title}</h3><p className="mt-2 text-sm text-slate-500">{item.text}</p></Link>)}</div></section>
+      <Suspense fallback={<p role="status">Loading follow-up overview...</p>}>
+        <FollowUpOverview />
+      </Suspense>
     </div>
   );
 }

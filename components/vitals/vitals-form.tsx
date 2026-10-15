@@ -8,8 +8,10 @@ import { createVitals } from "@/actions/vitals";
 
 export default function VitalsForm({
   patientId,
+  appointmentId,
 }: {
   patientId: string;
+  appointmentId?: string;
 }) {
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -29,6 +31,7 @@ export default function VitalsForm({
       className="space-y-6 rounded-2xl border bg-white p-6"
     >
       <input type="hidden" name="patient_id" value={patientId} />
+      <input type="hidden" name="appointment_id" value={appointmentId ?? ""} />
 
       <div className="flex items-center gap-3">
         <div className="rounded-xl bg-red-100 p-2 text-red-600">

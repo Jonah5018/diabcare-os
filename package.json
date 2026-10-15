@@ -8,7 +8,20 @@
     "start": "next start",
     "lint": "eslint",
     "verify:appointments": "node scripts/verify-appointments.cjs",
-    "verify:platform": "node scripts/verify-platform.cjs"
+    "verify:platform": "node scripts/verify-platform.cjs",
+    "verify:prescriptions": "node scripts/verify-prescriptions.cjs",
+    "verify:visits": "node scripts/verify-visits.cjs",
+    "verify:timeline": "node scripts/verify-timeline.cjs",
+    "verify:follow-ups": "node scripts/verify-follow-ups.cjs",
+    "verify:onboarding": "node scripts/verify-onboarding.cjs",
+    "verify:staff-roles": "node scripts/verify-staff-roles.cjs",
+    "verify:reports": "node scripts/verify-reports.cjs",
+    "verify:audit": "node scripts/verify-audit.cjs",
+    "verify:documents": "node scripts/verify-documents.cjs",
+    "verify:notifications": "node scripts/verify-notifications.cjs",
+    "verify:billing": "node scripts/verify-billing.cjs",
+    "verify:platform-admin": "node scripts/verify-platform-admin.cjs",
+    "verify:operations": "node scripts/verify-operations.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
